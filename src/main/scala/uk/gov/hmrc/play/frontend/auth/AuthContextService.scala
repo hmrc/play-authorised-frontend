@@ -21,6 +21,7 @@ import uk.gov.hmrc.play.frontend.auth.connectors.domain.Authority
 import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
 import uk.gov.hmrc.play.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.play.http.Upstream4xxResponse
 
 import scala.concurrent.Future
 
@@ -67,6 +68,8 @@ private[auth] trait AuthContextService {
         Logger.warn(s"Current Authority uri does not match session userId '$userId', ending session.  Authority found was: $authority")
         None
       case None => None
+    } recover {
+      case Upstream4xxResponse(_, 401, _, _) => None
     }
   }
 }
