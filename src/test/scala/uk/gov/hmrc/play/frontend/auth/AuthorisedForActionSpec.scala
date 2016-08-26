@@ -82,7 +82,8 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
       CredentialStrength.Weak,
       ConfidenceLevel.L100,
       userDetailsLink = Some("/user-details/1234567890"),
-      enrolments = Some("/auth/oid/1234567890/enrolments")
+      enrolments = Some("/auth/oid/1234567890/enrolments"),
+      ids = Some("/auth/oid/1234567890/ids")
     )
   }
 
@@ -103,7 +104,8 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
       CredentialStrength.Strong,
       ConfidenceLevel.L500,
       userDetailsLink = Some("/user-details/1234567890"),
-      enrolments = Some("/auth/oid/1234567890/enrolments")
+      enrolments = Some("/auth/oid/1234567890/enrolments"),
+      ids = Some("/auth/oid/1234567890/ids")
     )
 }
 

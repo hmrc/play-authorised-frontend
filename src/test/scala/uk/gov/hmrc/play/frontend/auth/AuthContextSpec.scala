@@ -49,7 +49,8 @@ class AuthContextSpec extends UnitSpec {
       credentialStrength = CredentialStrength.Strong,
       confidenceLevel = ConfidenceLevel.L500,
       userDetailsLink = Some("/user-details/1234567890"),
-      enrolments = Some("/auth/oid/1234567890/enrolments")
+      enrolments = Some("/auth/oid/1234567890/enrolments"),
+      ids = Some("/auth/oid/1234567890/ids")
     )
   }
 
