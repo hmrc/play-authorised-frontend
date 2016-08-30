@@ -6,7 +6,7 @@ object HmrcBuild extends Build {
   import uk.gov.hmrc._
   import uk.gov.hmrc.versioning.SbtGitVersioning
 
-  val appName = "play-authorised-frontend"
+  val appName = "play-authorised-frontend-25"
 
   lazy val library = (project in file("."))
     .enablePlugins(SbtAutoBuildPlugin, SbtGitVersioning)
