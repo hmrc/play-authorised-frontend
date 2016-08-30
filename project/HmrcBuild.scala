@@ -24,14 +24,14 @@ object HmrcBuild extends Build {
 
 private object AppDependencies {
 
-  import play.PlayImport._
+  import play.sbt.PlayImport._
   import play.core.PlayVersion
 
   val compile = Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
     json % "provided",
     ws % "provided",
-    "uk.gov.hmrc" %% "http-verbs" % "5.0.0",
+    "uk.gov.hmrc" %% "http-verbs-25" % "0.2.0",
     "uk.gov.hmrc" %% "domain" % "3.5.0"
   )
 
@@ -47,8 +47,9 @@ private object AppDependencies {
         "org.scalatest" %% "scalatest" % "2.2.4" % scope,
         "org.pegdown" % "pegdown" % "1.5.0" % scope,
         "com.github.tomakehurst" % "wiremock" % "1.54" % scope excludeAll ExclusionRule(organization = "org.apache.httpcomponents"),
-        "uk.gov.hmrc" %% "hmrctest" % "1.4.0" % scope,
-        "uk.gov.hmrc" %% "http-verbs-test" % "0.1.0" % scope
+        "uk.gov.hmrc" %% "hmrctest-25" % "0.3.0" % scope,
+        "uk.gov.hmrc" %% "http-verbs-test" % "0.1.0" % scope,
+        "org.mockito" % "mockito-all" % "1.9.5" % "test"
       )
     }.test
   }
