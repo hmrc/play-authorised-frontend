@@ -115,7 +115,8 @@ case class Authority(uri: String,
                      confidenceLevel: ConfidenceLevel,
                      userDetailsLink: Option[String],
                      enrolments: Option[String],
-                     ids: Option[String])
+                     ids: Option[String],
+                     legacyOid: String)
 
 object Authority {
   implicit val format = {

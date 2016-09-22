@@ -17,7 +17,7 @@
 package uk.gov.hmrc.play.frontend.auth.connectors
 
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.Authority
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
@@ -31,4 +31,11 @@ trait AuthConnector {
   def currentAuthority(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
     http.GET[Authority](s"$serviceUrl/auth/authority").map(Some.apply) // Option return is legacy of previous http library now baked into this class's api
   }
+  
+  def get[T](uri: String)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = {
+	// currently affordances are sent inconsistently from auth, some URLs are absolute while others are not
+    val fullUri = if (uri.startsWith("http")) uri else s"$serviceUrl$uri"
+    http.GET[T](fullUri)
+  }
+  
 }

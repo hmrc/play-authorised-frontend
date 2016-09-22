@@ -34,7 +34,8 @@ class AuthoritySpec extends UnitSpec with WithFakeApplication {
         ConfidenceLevel.L500,
         Some("/user-details/1234567890"),
         Some("/auth/oid/1234567890/enrolments"),
-        ids = Some("/auth/oid/1234567890/ids")
+        ids = Some("/auth/oid/1234567890/ids"),
+        legacyOid = "12345"
       )
 
       val jsonString = Json.toJson(authority).toString()
@@ -61,7 +62,8 @@ class AuthoritySpec extends UnitSpec with WithFakeApplication {
         ConfidenceLevel.L500,
         userDetailsLink = None,
         enrolments = None ,
-        ids = None
+        ids = None,
+        legacyOid = "12345"
       )
 
       val jsonString = Json.toJson(authority).toString()

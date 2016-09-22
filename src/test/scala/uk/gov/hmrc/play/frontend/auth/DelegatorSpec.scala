@@ -32,7 +32,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
   import org.mockito.Mockito._
 
   implicit val authContext = AuthContext(
-    user = LoggedInUser("/auth/oid/1234", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500),
+    user = LoggedInUser("/auth/1234", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500, "12345"),
     principal = Principal(
       name = Some("Dave Agent"),
       accounts = Accounts(agent = Some(AgentAccount(
@@ -46,7 +46,8 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
     ),
     attorney = None,
     userDetailsUri = Some("/user-details/1234567890"),
-    enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+    enrolmentsUri = Some("/auth/oid/1234567890/enrolments"),
+    idsUri = Some("/auth/oid/1234567890/ids")
   )
 
   implicit val hc = new HeaderCarrier()
@@ -69,7 +70,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
 
       val redirectTo = "http://blah/blah"
 
-      when(mockDelegationConnector.startDelegation("1234", delegationContext)).thenReturn(Future.successful(()))
+      when(mockDelegationConnector.startDelegation("12345", delegationContext)).thenReturn(Future.successful(()))
 
       val result = await(delegator.startDelegationAndRedirect(delegationContext, redirectTo))
 
@@ -78,7 +79,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
 
       UserSessionData(result.session).delegationState shouldBe DelegationOn
 
-      verify(mockDelegationConnector).startDelegation("1234", delegationContext)
+      verify(mockDelegationConnector).startDelegation("12345", delegationContext)
     }
   }
 
@@ -90,7 +91,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
 
       assert(UserSessionData(request.session).delegationState == DelegationOn)
 
-      when(mockDelegationConnector.endDelegation("1234")).thenReturn(Future.successful(()))
+      when(mockDelegationConnector.endDelegation("12345")).thenReturn(Future.successful(()))
 
       val result = await(delegator.endDelegation(Ok))
 
@@ -98,7 +99,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
 
       result.header.status shouldBe 200
 
-      verify(mockDelegationConnector).endDelegation("1234")
+      verify(mockDelegationConnector).endDelegation("12345")
     }
   }
 

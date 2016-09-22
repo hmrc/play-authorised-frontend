@@ -75,7 +75,7 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
 
   def lowAssuranceUser: Authority = {
     Authority(
-      s"/auth/oid/jdensmore",
+      s"/auth/jdensmore",
       Accounts(sa = Some(SaAccount(s"/sa/individual/AB123456C", SaUtr("AB123456C")))),
       None,
       None,
@@ -83,7 +83,8 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
       ConfidenceLevel.L100,
       userDetailsLink = Some("/user-details/1234567890"),
       enrolments = Some("/auth/oid/1234567890/enrolments"),
-      ids = Some("/auth/oid/1234567890/ids")
+      ids = Some("/auth/oid/1234567890/ids"),
+      legacyOid = "jdensmore"
     )
   }
 
@@ -91,13 +92,13 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
     FakeRequest().withSession(
       SessionKeys.sessionId -> s"session-${UUID.randomUUID()}",
       SessionKeys.lastRequestTimestamp -> now.getMillis.toString,
-      SessionKeys.userId -> "/auth/oid/jdensmore",
+      SessionKeys.userId -> "/auth/jdensmore",
       SessionKeys.token -> "validtoken")
   }
 
   def saAuthority(id: String, utr: String): Authority =
     Authority(
-      s"/auth/oid/$id",
+      s"/auth/$id",
       Accounts(sa = Some(SaAccount(s"/sa/individual/$utr", SaUtr(utr)))),
       None,
       None,
@@ -105,7 +106,8 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
       ConfidenceLevel.L500,
       userDetailsLink = Some("/user-details/1234567890"),
       enrolments = Some("/auth/oid/1234567890/enrolments"),
-      ids = Some("/auth/oid/1234567890/ids")
+      ids = Some("/auth/oid/1234567890/ids"),
+      legacyOid = id
     )
 }
 
