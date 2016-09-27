@@ -24,7 +24,8 @@ case class AuthContext(
   principal: Principal,
   attorney: Option[Attorney],
   userDetailsUri: Option[String],
-  enrolmentsUri: Option[String]
+  enrolmentsUri: Option[String],
+  idsUri: Option[String]
 ) {
   lazy val isDelegating: Boolean = attorney.isDefined
 }
@@ -47,7 +48,8 @@ object AuthContext {
         previouslyLoggedInAt = authority.previouslyLoggedInAt,
         governmentGatewayToken = governmentGatewayToken,
         credentialStrength = authority.credentialStrength,
-        confidenceLevel = authority.confidenceLevel
+        confidenceLevel = authority.confidenceLevel,
+        oid = authority.legacyOid
       ),
       principal = Principal(
         name = principalName,
@@ -55,25 +57,22 @@ object AuthContext {
       ),
       attorney = attorney,
       userDetailsUri = authority.userDetailsLink,
-      enrolmentsUri = authority.enrolments
+      enrolmentsUri = authority.enrolments,
+      idsUri = authority.ids
     )
   }
 }
 
-case class LoggedInUser(userId: String,loggedInAt: Option[DateTime],
+case class LoggedInUser(@deprecated("Use internalId or externalId (via AuthConnector.getIds) instead", "5.8.0") userId: String, 
+                        loggedInAt: Option[DateTime],
                         previouslyLoggedInAt: Option[DateTime],
                         governmentGatewayToken: Option[String],
                         credentialStrength: CredentialStrength,
-                        confidenceLevel: ConfidenceLevel) {
-  lazy val oid: String = OidExtractor.userIdToOid(userId)
-}
+                        confidenceLevel: ConfidenceLevel,
+                        @deprecated("Use internalId or externalId (via AuthConnector.getIds) instead", "5.8.0") oid: String)
 
 case class Principal(name: Option[String], accounts: Accounts)
 
 case class Attorney(name: String, returnLink: Link)
 
 case class Link(url: String, text: String)
-
-object OidExtractor {
-  def userIdToOid(userId: String): String = userId.substring(userId.lastIndexOf("/") + 1)
-}

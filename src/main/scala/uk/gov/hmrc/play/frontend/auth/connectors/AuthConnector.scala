@@ -17,10 +17,11 @@
 package uk.gov.hmrc.play.frontend.auth.connectors
 
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.Authority
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet}
+import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-
 import scala.concurrent.Future
+import uk.gov.hmrc.play.frontend.auth.AuthContext
+import uk.gov.hmrc.play.http.NotFoundException
 
 trait AuthConnector {
 
@@ -31,4 +32,53 @@ trait AuthConnector {
   def currentAuthority(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
     http.GET[Authority](s"$serviceUrl/auth/authority").map(Some.apply) // Option return is legacy of previous http library now baked into this class's api
   }
+  
+  protected def get[T](optUri: Option[String])(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = {
+    optUri.fold(Future.failed[T](new NotFoundException("Affordance not available in authority"))) { uri =>
+      // currently affordances are sent inconsistently from auth, some URLs are absolute while others are not
+      val fullUri = if (uri.startsWith("http")) uri else s"$serviceUrl$uri"
+      http.GET[T](fullUri)
+    }
+  }
+  
+  /** Retrieves the user details that are associated with the specified auth context.
+   *  
+   *  This method expects a custom Scala class and associated JSON `Reads` for decoding the response
+   *  or alternatively allows you to receive the raw JSON if you leave off the type parameter.
+   *  
+   *  You should only bind to the subset of available user details you are actually using in your
+   *  service to avoid tight coupling to auth JSON formats. 
+   *  
+   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/user-details#get-user-detailsidid
+   */
+  def getUserDetails[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+    get[T](authContext.userDetailsUri)
+    
+  /** Retrieves the enrolments that are associated with the specified auth context.
+   *  
+   *  This method expects a custom Scala class and associated JSON `Reads` for decoding the response
+   *  or alternatively allows you to receive the raw JSON if you leave off the type parameter.
+   *   
+   *  You should only bind to the subset of enrolment data you are actually using in your
+   *  service to avoid tight coupling to auth JSON formats. 
+   *  
+   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#enrolments-get
+   */
+  def getEnrolments[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+    get[T](authContext.enrolmentsUri)
+    
+  /** Retrieves the stable identifiers that are associated with the specified auth context.
+   *  These identifiers replace the deprecated `userId` and `oid` properties from the `AuthContext`.
+   *  
+   *  This method expects a custom Scala class and associated JSON `Reads` for decoding the response
+   *  or alternatively allows you to receive the raw JSON if you leave off the type parameter.
+   *   
+   *  You should only bind to the one id you are actually using in your
+   *  service to avoid tight coupling to auth JSON formats. 
+   *  
+   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#ids-get
+   */
+  def getIds[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+    get[T](authContext.idsUri)
+  
 }

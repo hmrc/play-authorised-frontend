@@ -34,38 +34,39 @@ private[auth] trait AuthContextService {
   private[auth] def currentAuthContext(sessionData: UserSessionData)(implicit hc: HeaderCarrier): Future[Option[AuthContext]] = {
 
     sessionData.userId match {
-      case Some(userId) => loadAuthContext(userId, sessionData.governmentGatewayToken, sessionData.name, sessionData.delegationState)
+      // during the transition period this URI may point to either a session record or an old auth record
+      case Some(authorityUri) => loadAuthContext(authorityUri, sessionData.governmentGatewayToken, sessionData.name, sessionData.delegationState)
       case None => Future.successful(None)
     }
   }
 
-  private def loadAuthContext(userId: String,
+  private def loadAuthContext(authorityUri: String,
                               governmentGatewayToken: Option[String],
                               nameFromSession: Option[String],
                               delegationState: DelegationState)
                              (implicit hc: HeaderCarrier): Future[Option[AuthContext]] = {
 
-    val authorityResponse = loadAuthority(userId)
+    val authorityResponse = loadAuthority(authorityUri)
 
-    val delegationDataResponse = delegationState match {
-      case DelegationOn => loadDelegationData(userId)
+    def loadDelegationData(auth: Authority): Future[Option[DelegationData]] = delegationState match {
+      case DelegationOn => self.loadDelegationData(auth.legacyOid)
       case _ => Future.successful(None)
     }
 
     authorityResponse.flatMap {
-      case Some(authority) => delegationDataResponse.map { delegationData =>
+      case Some(authority) => loadDelegationData(authority).map { delegationData =>
         Some(AuthContext(authority, governmentGatewayToken, nameFromSession, delegationData))
       }
       case None => Future.successful(None)
     }
   }
 
-  private def loadAuthority(userId: String)(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
+  private def loadAuthority(authorityUri: String)(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
 
     authConnector.currentAuthority.map {
-      case Some(authority) if authority.uri == userId => Some(authority)
-      case Some(authority) if authority.uri != userId =>
-        Logger.warn(s"Current Authority uri does not match session userId '$userId', ending session.  Authority found was: $authority")
+      case Some(authority) if authority.uri == authorityUri => Some(authority)
+      case Some(authority) if authority.uri != authorityUri =>
+        Logger.warn(s"Current Authority uri does not match session URI '$authorityUri', ending session.  Authority found was: $authority")
         None
       case None => None
     } recover {
@@ -75,11 +76,11 @@ private[auth] trait AuthContextService {
 }
 
 private[auth] sealed trait DelegationDataProvider {
-  protected def loadDelegationData(userId: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]]
+  protected def loadDelegationData(oid: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]]
 }
 
 private[auth] trait DelegationDisabled extends DelegationDataProvider {
-  protected override def loadDelegationData(userId: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] =
+  protected override def loadDelegationData(oid: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] =
     Future.successful(None)
 }
 
@@ -87,7 +88,7 @@ private[auth] trait DelegationEnabled extends DelegationDataProvider {
 
   protected def delegationConnector: DelegationConnector
 
-  protected override def loadDelegationData(userId: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] = {
-    delegationConnector.getDelegationData(OidExtractor.userIdToOid(userId))
+  protected override def loadDelegationData(oid: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] = {
+    delegationConnector.getDelegationData(oid)
   }
 }

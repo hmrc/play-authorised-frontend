@@ -25,7 +25,8 @@ class AuthContextSpec extends UnitSpec {
 
   object SessionData {
 
-    val userId = "/auth/oid/1234567890"
+    val oid = "1234567890"
+    val userId = s"/path/to/authority"
     val name = Some("Gary 'Government' Gateway")
     val governmentGatewayToken = Some("token")
   }
@@ -50,7 +51,8 @@ class AuthContextSpec extends UnitSpec {
       confidenceLevel = ConfidenceLevel.L500,
       userDetailsLink = Some("/user-details/1234567890"),
       enrolments = Some("/auth/oid/1234567890/enrolments"),
-      ids = Some("/auth/oid/1234567890/ids")
+      ids = Some("/auth/oid/1234567890/ids"),
+      legacyOid = SessionData.oid
     )
   }
 
@@ -70,7 +72,8 @@ class AuthContextSpec extends UnitSpec {
     previouslyLoggedInAt = AuthData.previouslyLoggedInAt,
     governmentGatewayToken = SessionData.governmentGatewayToken,
     credentialStrength = CredentialStrength.Strong,
-    confidenceLevel = ConfidenceLevel.L500
+    confidenceLevel = ConfidenceLevel.L500,
+    oid = SessionData.oid
   )
 
   object ExpectationsWhenNotDelegating {
@@ -80,7 +83,13 @@ class AuthContextSpec extends UnitSpec {
       accounts = AuthData.accounts
     )
 
-    val expectedAuthContext = AuthContext(expectedLoggedInUser, principal, None, Some("/user-details/1234567890"), Some("/auth/oid/1234567890/enrolments"))
+    val expectedAuthContext = AuthContext(
+        expectedLoggedInUser, 
+        principal, 
+        None, 
+        Some("/user-details/1234567890"), 
+        Some("/auth/oid/1234567890/enrolments"),
+        Some("/auth/oid/1234567890/ids"))
   }
 
   object ExpectationsWhenDelegating {
@@ -92,7 +101,13 @@ class AuthContextSpec extends UnitSpec {
 
     val attorney = Attorney(DelegationServiceData.attorneyName, DelegationServiceData.returnLink)
 
-    val expectedAuthContext = AuthContext(expectedLoggedInUser, principal, Some(attorney), Some("/user-details/1234567890"), Some("/auth/oid/1234567890/enrolments"))
+    val expectedAuthContext = AuthContext(
+        expectedLoggedInUser, 
+        principal, 
+        Some(attorney), 
+        Some("/user-details/1234567890"), 
+        Some("/auth/oid/1234567890/enrolments"),
+        Some("/auth/oid/1234567890/ids"))
   }
 
   "The AuthContext apply method" should {
@@ -114,15 +129,27 @@ class AuthContextSpec extends UnitSpec {
 
   "The isDelegating flag" should {
 
-    val loggedInUser = LoggedInUser("uid", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500)
+    val loggedInUser = LoggedInUser("uid", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500, SessionData.oid)
     val principal = Principal(Some("Bob P"), Accounts())
 
     "be true if the attorney is defined" in {
-      AuthContext(loggedInUser, principal, Some(Attorney("Dave A", Link("A", "A"))), Some("/user-details/1234567890"), Some("/auth/oid/1234567890/enrolments")).isDelegating shouldBe true
+      AuthContext(
+          loggedInUser, 
+          principal, 
+          Some(Attorney("Dave A", Link("A", "A"))), 
+          Some("/user-details/1234567890"), 
+          Some("/auth/oid/1234567890/enrolments"),
+          Some("/auth/oid/1234567890/ids")).isDelegating shouldBe true
     }
 
     "be false if the attorney is None" in {
-      AuthContext(loggedInUser, principal, None, Some("/user-details/1234567890"), Some("/auth/oid/1234567890/enrolments")).isDelegating shouldBe false
+      AuthContext(
+          loggedInUser, 
+          principal, 
+          None, 
+          Some("/user-details/1234567890"), 
+          Some("/auth/oid/1234567890/enrolments"),
+          Some("/auth/oid/1234567890/ids")).isDelegating shouldBe false
     }
   }
 }

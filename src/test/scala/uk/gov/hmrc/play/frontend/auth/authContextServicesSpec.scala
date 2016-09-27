@@ -91,11 +91,13 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             Some(session.governmentGatewayToken),
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(delegationData.principalName), delegationData.accounts),
           attorney = Some(Attorney(delegationData.attorneyName, delegationData.link)),
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -120,11 +122,13 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             None,
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(delegationData.principalName), delegationData.accounts),
           attorney = Some(Attorney(delegationData.attorneyName, delegationData.link)),
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -154,11 +158,13 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             Some(session.governmentGatewayToken),
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(session.name), userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -183,11 +189,13 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             None,
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(session.name), userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -212,11 +220,13 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             Some(session.governmentGatewayToken),
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(None, userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
   }
@@ -322,11 +332,13 @@ class AuthContextServiceDisallowingDelegationSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             Some(session.governmentGatewayToken),
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(session.name), userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -351,11 +363,13 @@ class AuthContextServiceDisallowingDelegationSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             None,
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(Some(session.name), userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
 
@@ -380,11 +394,13 @@ class AuthContextServiceDisallowingDelegationSpec extends UnitSpec with MockitoS
             userAtKeyboard.previouslyLoggedInAt,
             Some(session.governmentGatewayToken),
             CredentialStrength.Strong,
-            ConfidenceLevel.L500),
+            ConfidenceLevel.L500,
+            session.oid),
           principal = Principal(None, userAtKeyboard.accounts),
           attorney = None,
           userDetailsUri = Some("/user-details/1234567890"),
-          enrolmentsUri = Some("/auth/oid/1234567890/enrolments")
+          enrolmentsUri = Some("/auth/1234567/enrolments"),
+          idsUri = Some("/auth/1234567/ids")
         ))
     }
   }
@@ -422,7 +438,7 @@ trait AuthContextServiceTestCase extends MockitoSugar {
   val mockAuthConnector: AuthConnector = mock[AuthConnector]
 
   object session {
-    val userId = "/auth/oid/1234567890"
+    val userId = "/auth/1234567"
     val oid = "1234567890"
     val governmentGatewayToken = "token"
     val name = "Dave Agent"
@@ -447,8 +463,9 @@ trait AuthContextServiceTestCase extends MockitoSugar {
       credentialStrength = CredentialStrength.Strong,
       confidenceLevel = ConfidenceLevel.L500,
       userDetailsLink = Some("/user-details/1234567890"),
-      enrolments = Some("/auth/oid/1234567890/enrolments"),
-      ids = Some("/auth/oid/1234567890/ids")
+      enrolments = Some("/auth/1234567/enrolments"),
+      ids = Some("/auth/1234567/ids"),
+      legacyOid = session.oid
     )
   }
 
