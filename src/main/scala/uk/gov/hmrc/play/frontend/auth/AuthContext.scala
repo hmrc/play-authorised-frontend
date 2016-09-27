@@ -18,7 +18,6 @@ package uk.gov.hmrc.play.frontend.auth
 
 import org.joda.time.DateTime
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.{CredentialStrength, Accounts, Authority, ConfidenceLevel}
-import play.api.libs.json.Json
 
 case class AuthContext(
   user: LoggedInUser,
@@ -64,22 +63,16 @@ object AuthContext {
   }
 }
 
-case class LoggedInUser(@deprecated("Use internalId or externalId instead", "5.8.0") userId: String, 
+case class LoggedInUser(@deprecated("Use internalId or externalId (via AuthConnector.getIds) instead", "5.8.0") userId: String, 
                         loggedInAt: Option[DateTime],
                         previouslyLoggedInAt: Option[DateTime],
                         governmentGatewayToken: Option[String],
                         credentialStrength: CredentialStrength,
                         confidenceLevel: ConfidenceLevel,
-                        @deprecated("Use internalId or externalId instead", "5.8.0") oid: String)
+                        @deprecated("Use internalId or externalId (via AuthConnector.getIds) instead", "5.8.0") oid: String)
 
 case class Principal(name: Option[String], accounts: Accounts)
 
 case class Attorney(name: String, returnLink: Link)
 
 case class Link(url: String, text: String)
-
-case class Ids(internalId: String, externalId: String)
-
-object Ids {
-  implicit val format = Json.format[Ids]
-}

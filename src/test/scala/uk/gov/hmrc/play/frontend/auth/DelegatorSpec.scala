@@ -32,7 +32,7 @@ class DelegatorSpec extends UnitSpec with WithFakeApplication with Results {
   import org.mockito.Mockito._
 
   implicit val authContext = AuthContext(
-    user = LoggedInUser("/auth/1234", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500, "12345"),
+    user = LoggedInUser("/auth/12345", None, None, None, CredentialStrength.Strong, ConfidenceLevel.L500, "12345"),
     principal = Principal(
       name = Some("Dave Agent"),
       accounts = Accounts(agent = Some(AgentAccount(
