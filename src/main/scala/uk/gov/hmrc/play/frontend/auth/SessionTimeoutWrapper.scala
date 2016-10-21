@@ -89,6 +89,6 @@ trait SessionTimeout {
 
   private def session(result: Result): Option[Session] = for {
     resultSetCookieHeader <- result.header.headers.get(SET_COOKIE)
-    resultSessionCookie <- Cookies(Some(resultSetCookieHeader)).get(Session.COOKIE_NAME)
+    resultSessionCookie <- Cookies.fromSetCookieHeader(Some(resultSetCookieHeader)).get(Session.COOKIE_NAME)
   } yield Session.decodeFromCookie(Some(resultSessionCookie))
 }

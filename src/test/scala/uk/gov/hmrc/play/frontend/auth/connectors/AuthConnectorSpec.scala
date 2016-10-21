@@ -112,7 +112,7 @@ class AuthConnectorSpec extends UnitSpec with WithFakeApplication with WireMocke
       
       stubIds()
       
-      (await(connector.getIds(authContext)).json \ "internalId") shouldBe JsString("int-1234")
+      (await((connector.getIds(authContext)).json \ "internalId").get) shouldBe JsString("int-1234")
     }
     
     "fail with NotFoundException if the affordance is empty" in new Setup {
