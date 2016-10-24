@@ -31,7 +31,7 @@ private object AppDependencies {
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
     json % "provided",
     ws % "provided",
-    "uk.gov.hmrc" %% "http-verbs" % "6.1.0",
+    "uk.gov.hmrc" %% "http-verbs" % "6.2.0",
     "uk.gov.hmrc" %% "domain" % "4.0.0"
   )
 
