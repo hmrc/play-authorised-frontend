@@ -47,7 +47,7 @@ private object AppDependencies {
         "org.scalatest" %% "scalatest" % "2.2.4" % scope,
         "org.pegdown" % "pegdown" % "1.5.0" % scope,
         "com.github.tomakehurst" % "wiremock" % "1.54" % scope excludeAll ExclusionRule(organization = "org.apache.httpcomponents"),
-        "uk.gov.hmrc" %% "hmrctest" % "2.0.0" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "2.1.0" % scope,
         "uk.gov.hmrc" %% "http-verbs-test" % "1.0.0" % scope,
         "org.mockito" % "mockito-all" % "1.9.5" % "test"
       )
