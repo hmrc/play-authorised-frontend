@@ -31,8 +31,8 @@ private object AppDependencies {
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
     json % "provided",
     ws % "provided",
-    "uk.gov.hmrc" %% "http-verbs" % "6.2.0",
-    "uk.gov.hmrc" %% "domain" % "4.0.0"
+    "uk.gov.hmrc" %% "http-verbs" % "6.3.0",
+    "uk.gov.hmrc" %% "domain" % "4.1.0"
   )
 
   trait TestDependencies {
@@ -47,8 +47,8 @@ private object AppDependencies {
         "org.scalatest" %% "scalatest" % "2.2.4" % scope,
         "org.pegdown" % "pegdown" % "1.5.0" % scope,
         "com.github.tomakehurst" % "wiremock" % "1.54" % scope excludeAll ExclusionRule(organization = "org.apache.httpcomponents"),
-        "uk.gov.hmrc" %% "hmrctest" % "2.1.0" % scope,
-        "uk.gov.hmrc" %% "http-verbs-test" % "1.0.0" % scope,
+        "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
+        "uk.gov.hmrc" %% "http-verbs-test" % "1.1.0" % scope,
         "org.mockito" % "mockito-all" % "1.9.5" % "test"
       )
     }.test
