@@ -94,4 +94,3 @@ microservice, and removes the delegation flag from the session.
 ## License ##
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
-
