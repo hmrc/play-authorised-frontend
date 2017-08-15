@@ -23,8 +23,9 @@ import uk.gov.hmrc.domain.{CtUtr, Nino, SaUtr}
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.ConfidenceLevel
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.CredentialStrength
 import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector, domain}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
 import uk.gov.hmrc.play.test.UnitSpec
+import org.mockito.Matchers.{any => mockitoAny}
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -256,6 +257,8 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
 
     val mockDelegationConnector: DelegationConnector = mock[DelegationConnector]
 
+    val responseHandlerMock: HttpReads[Option[DelegationData]] = mock[HttpReads[Option[DelegationData]]]
+
     val delegationData = DelegationData(
       principalName = "Bill Principal",
       attorneyName = "Brian Agent",
@@ -264,9 +267,9 @@ class AuthContextServiceWithDelegationEnabledSpec extends UnitSpec with MockitoS
     )
 
     if (testSetup.returnDataFromDelegationService) {
-      when(mockDelegationConnector.getDelegationData(session.oid)).thenReturn(Future.successful(Some(delegationData)))
+      when(mockDelegationConnector.getDelegationData(mockitoAny[String], mockitoAny[HttpReads[Option[DelegationData]]])(mockitoAny[HeaderCarrier])).thenReturn(Future.successful(Some(delegationData)))
     } else {
-      when(mockDelegationConnector.getDelegationData(session.oid)).thenReturn(Future.successful(None))
+      when(mockDelegationConnector.getDelegationData(mockitoAny[String], mockitoAny[HttpReads[Option[DelegationData]]])(mockitoAny[HeaderCarrier])).thenReturn(Future.successful(None))
     }
 
     val service = new AuthContextService with DelegationEnabled {
