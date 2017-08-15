@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,23 @@
 
 package uk.gov.hmrc.play.frontend.auth.connectors
 
+import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, HttpReads, NotFoundException}
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.Authority
-import uk.gov.hmrc.play.http.{HeaderCarrier, HttpGet, HttpReads}
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 import uk.gov.hmrc.play.frontend.auth.AuthContext
-import uk.gov.hmrc.play.http.NotFoundException
 
 trait AuthConnector {
 
   val serviceUrl: String
 
-  def http: HttpGet
+  def http: CoreGet
 
-  def currentAuthority(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
+  def currentAuthority(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Authority]] = {
     http.GET[Authority](s"$serviceUrl/auth/authority").map(Some.apply) // Option return is legacy of previous http library now baked into this class's api
   }
   
-  protected def get[T](optUri: Option[String])(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = {
+  protected def get[T](optUri: Option[String])(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] = {
     optUri.fold(Future.failed[T](new NotFoundException("Affordance not available in authority"))) { uri =>
       // currently affordances are sent inconsistently from auth, some URLs are absolute while others are not
       val fullUri = if (uri.startsWith("http")) uri else s"$serviceUrl$uri"
@@ -51,7 +50,7 @@ trait AuthConnector {
    *  
    *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/user-details#get-user-detailsidid
    */
-  def getUserDetails[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+  def getUserDetails[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.userDetailsUri)
     
   /** Retrieves the enrolments that are associated with the specified auth context.
@@ -64,7 +63,7 @@ trait AuthConnector {
    *  
    *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#enrolments-get
    */
-  def getEnrolments[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+  def getEnrolments[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.enrolmentsUri)
     
   /** Retrieves the stable identifiers that are associated with the specified auth context.
@@ -78,7 +77,7 @@ trait AuthConnector {
    *  
    *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#ids-get
    */
-  def getIds[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = 
+  def getIds[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.idsUri)
   
 }

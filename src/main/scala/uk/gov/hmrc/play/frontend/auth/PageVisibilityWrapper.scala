@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ import java.net.URI
 import play.api.mvc.Results._
 import play.api.mvc._
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.ConfidenceLevel
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent._
@@ -55,7 +56,7 @@ trait CompositePageVisibilityPredicate extends PageVisibilityPredicate {
   def children: Seq[PageVisibilityPredicate]
 
   override def apply(authContext: AuthContext, request: Request[AnyContent]): Future[PageVisibilityResult] = {
-    implicit val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+    implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
     children.foldLeft[Future[PageVisibilityResult]](Future.successful(PageIsVisible)) { (eventualPriorResult, currentPredicate) =>
       eventualPriorResult.flatMap { priorResult =>
@@ -79,7 +80,7 @@ private[auth] object WithPageVisibility {
   def apply(predicate: PageVisibilityPredicate, authContext: AuthContext)(action: AuthContext => Action[AnyContent]): Action[AnyContent] =
     Action.async {
       request =>
-        implicit val hc = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+        implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
         predicate(authContext, request).flatMap { visible =>
           if (visible.isVisible)
             action(authContext)(request)

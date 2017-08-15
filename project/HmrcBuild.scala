@@ -30,8 +30,7 @@ private object AppDependencies {
   val compile = Seq(
     "com.typesafe.play" %% "play" % PlayVersion.current % "provided",
     json % "provided",
-    ws % "provided",
-    "uk.gov.hmrc" %% "http-verbs" % "6.4.0",
+    "uk.gov.hmrc" %% "http-verbs-play-25" % "0.6.0",
     "uk.gov.hmrc" %% "domain" % "4.1.0"
   )
 
