@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@
 package uk.gov.hmrc.play.frontend.auth
 
 import play.api.Logger
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.Authority
 import uk.gov.hmrc.play.frontend.auth.connectors.{AuthConnector, DelegationConnector}
-import uk.gov.hmrc.play.http.HeaderCarrier
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
-import uk.gov.hmrc.play.http.Upstream4xxResponse
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 private[auth] trait AuthContextService {
 
@@ -31,7 +29,7 @@ private[auth] trait AuthContextService {
 
   protected def authConnector: AuthConnector
 
-  private[auth] def currentAuthContext(sessionData: UserSessionData)(implicit hc: HeaderCarrier): Future[Option[AuthContext]] = {
+  private[auth] def currentAuthContext(sessionData: UserSessionData)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthContext]] = {
 
     sessionData.userId match {
       // during the transition period this URI may point to either a session record or an old auth record
@@ -44,7 +42,7 @@ private[auth] trait AuthContextService {
                               governmentGatewayToken: Option[String],
                               nameFromSession: Option[String],
                               delegationState: DelegationState)
-                             (implicit hc: HeaderCarrier): Future[Option[AuthContext]] = {
+                             (implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[AuthContext]] = {
 
     val authorityResponse = loadAuthority(authorityUri)
 
@@ -61,7 +59,7 @@ private[auth] trait AuthContextService {
     }
   }
 
-  private def loadAuthority(authorityUri: String)(implicit hc: HeaderCarrier): Future[Option[Authority]] = {
+  private def loadAuthority(authorityUri: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Authority]] = {
 
     authConnector.currentAuthority.map {
       case Some(authority) if authority.uri == authorityUri => Some(authority)

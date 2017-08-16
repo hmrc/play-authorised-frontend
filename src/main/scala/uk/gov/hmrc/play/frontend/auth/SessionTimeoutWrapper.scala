@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,11 @@ package uk.gov.hmrc.play.frontend.auth
 
 import org.joda.time.{DateTime, DateTimeZone, Duration}
 import play.api.Logger
-import uk.gov.hmrc.play.http.{HeaderCarrier, SessionKeys}
+import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.time.DateTimeUtils
 import play.api.mvc._
+import uk.gov.hmrc.play.HeaderCarrierConverter
 
 import scala.concurrent._
 
@@ -39,7 +40,7 @@ class WithSessionTimeoutValidation(val now: () => DateTime) extends SessionTimeo
 
   def apply(authenticationProvider: AuthenticationProvider)(action: Action[AnyContent]): Action[AnyContent] = Action.async {
     implicit request: Request[AnyContent] => {
-      implicit val loggingDetails = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+      implicit val loggingDetails = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
 
       def preserveSession(timeoutRequest: Result): Seq[(String, String)] = for {
         key <- authenticationProvider.sessionKeysToKeep
@@ -77,7 +78,7 @@ trait SessionTimeout {
   val now: () => DateTime
 
   protected def addTimestamp(request: Request[AnyContent], result: Future[Result]): Future[Result] = {
-    implicit val headerCarrier = HeaderCarrier.fromHeadersAndSession(request.headers, Some(request.session))
+    implicit val headerCarrier = HeaderCarrierConverter.fromHeadersAndSession(request.headers, Some(request.session))
     result.map(insertTimestampNow(request))
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,24 @@
 
 package uk.gov.hmrc.play.frontend.auth.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import org.mockito.Matchers.{any, eq => meq}
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import play.api.libs.json.Json
 import uk.gov.hmrc.domain.{Nino, SaUtr}
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.frontend.auth._
 import uk.gov.hmrc.play.frontend.auth.connectors.domain.{Accounts, PayeAccount, SaAccount}
-import uk.gov.hmrc.play.http._
-import uk.gov.hmrc.play.http.hooks.HttpHook
-import uk.gov.hmrc.play.http.ws._
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class DelegationConnectorSpec extends UnitSpec with WithFakeApplication with WireMockedSpec {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class DelegationConnectorSpec extends UnitSpec with WithFakeApplication  {
 
   private implicit val hc = HeaderCarrier()
 
-  "The getDelegationData method" should {
+  "The getDelegationData response handler" should {
 
     val delegationDataObject = DelegationData(
       principalName = "Dave Client",
@@ -60,49 +62,36 @@ class DelegationConnectorSpec extends UnitSpec with WithFakeApplication with Wir
           "utr" -> "1234567890"
         )
       )
-    ).toString()
+    )
 
     "return the delegation data returned from the service, if the response code is 200" in new TestCase {
-
-      stubFor(get(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(200).withBody(delegationDataJson)))
-
-      await(connector.getDelegationData(oid)) shouldBe Some(delegationDataObject)
+      val response = HttpResponse(200, Some(delegationDataJson))
+      connector.responseHandler.read("GET", s"/oid/$oid", response) shouldBe Some(delegationDataObject)
     }
 
     "return None when the response code is 404" in new TestCase {
-
-      stubFor(get(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(404)))
-
-      await(connector.getDelegationData(oid)) shouldBe None
+      val response = HttpResponse(404)
+      connector.responseHandler.read("GET", s"/oid/$oid", response) shouldBe None
     }
 
     "throw an exception if the response code is anything other than 200 or 404" in new TestCase {
-
       val oid204 = "204oid"
       val oid400 = "400oid"
       val oid500 = "500oid"
 
-      stubFor(get(urlEqualTo(s"/oid/$oid204")).willReturn(aResponse().withStatus(204)))
-      stubFor(get(urlEqualTo(s"/oid/$oid400")).willReturn(aResponse().withStatus(400)))
-      stubFor(get(urlEqualTo(s"/oid/$oid500")).willReturn(aResponse().withStatus(500)))
-
-      a[DelegationServiceException] should be thrownBy await(connector.getDelegationData(oid204))
-      a[DelegationServiceException] should be thrownBy await(connector.getDelegationData(oid400))
-      a[DelegationServiceException] should be thrownBy await(connector.getDelegationData(oid500))
+      a[DelegationServiceException] should be thrownBy connector.responseHandler.read("GET", s"/oid/$oid204", HttpResponse(204))
+      a[DelegationServiceException] should be thrownBy connector.responseHandler.read("GET", s"/oid/$oid400", HttpResponse(400))
+      a[DelegationServiceException] should be thrownBy connector.responseHandler.read("GET", s"/oid/$oid500", HttpResponse(500))
     }
 
     "throw an exception if the response is not valid JSON" in new TestCase {
-
-      stubFor(get(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(200).withBody("{ not _ json :")))
-
-      a[DelegationServiceException] should be thrownBy await(connector.getDelegationData(oid))
+      val response = HttpResponse(200, None, Map.empty, Some("{ not _ json :"))
+      a[DelegationServiceException] should be thrownBy connector.responseHandler.read("GET", s"/oid/$oid", response)
     }
 
     "throw an exception if the response is valid JSON, but not representing Delegation Data" in new TestCase {
-
-      stubFor(get(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(200).withBody( """{"valid":"json"}""")))
-
-      a[DelegationServiceException] should be thrownBy await(connector.getDelegationData(oid))
+      val response = HttpResponse(200, None, Map.empty, Some("""{"valid":"json"}"""))
+      a[DelegationServiceException] should be thrownBy connector.responseHandler.read("GET", s"/oid/$oid", response)
     }
   }
 
@@ -132,64 +121,64 @@ class DelegationConnectorSpec extends UnitSpec with WithFakeApplication with Wir
     ).toString()
 
     "send the delegation data to the DelegationService, and succeed if the response code is 201" in new TestCase {
-
-      stubFor(put(urlEqualTo(s"/oid/$oid")).withRequestBody(equalToJson(delegationContextJson)).willReturn(aResponse().withStatus(201)))
+      when(mockHttp.PUT[DelegationContext, HttpResponse](meq(s"$baseUrl/oid/$oid"), meq(delegationContextObject))(any(), any(), any(), any()))
+        .thenReturn(Future(HttpResponse(201)))
 
       await(connector.startDelegation(oid, delegationContextObject))
-
-      verify(putRequestedFor(urlEqualTo(s"/oid/$oid")).withRequestBody(equalToJson(delegationContextJson)))
     }
 
     "send the delegation data to the DelegationService, and fail if the response code is anything other than 201" in new TestCase {
-
       val oid200 = "200oid"
       val oid204 = "204oid"
-      val oid400 = "400oid"
-      val oid500 = "500oid"
 
-      stubFor(put(urlEqualTo(s"/oid/$oid200")).withRequestBody(equalToJson(delegationContextJson)).willReturn(aResponse().withStatus(200)))
-      stubFor(put(urlEqualTo(s"/oid/$oid204")).withRequestBody(equalToJson(delegationContextJson)).willReturn(aResponse().withStatus(204)))
-      stubFor(put(urlEqualTo(s"/oid/$oid400")).withRequestBody(equalToJson(delegationContextJson)).willReturn(aResponse().withStatus(400)))
-      stubFor(put(urlEqualTo(s"/oid/$oid500")).withRequestBody(equalToJson(delegationContextJson)).willReturn(aResponse().withStatus(500)))
+      when(mockHttp.PUT[DelegationContext, HttpResponse](meq(s"$baseUrl/oid/$oid200"), meq(delegationContextObject))(any(), any(), any(), any()))
+        .thenReturn(Future(HttpResponse(200)))
+
+      when(mockHttp.PUT[DelegationContext, HttpResponse](meq(s"$baseUrl/oid/$oid204"), meq(delegationContextObject))(any(), any(), any(), any()))
+        .thenReturn(Future(HttpResponse(204)))
 
       a[DelegationServiceException] should be thrownBy await(connector.startDelegation(oid200, delegationContextObject))
       a[DelegationServiceException] should be thrownBy await(connector.startDelegation(oid204, delegationContextObject))
-      a[BadRequestException] should be thrownBy await(connector.startDelegation(oid400, delegationContextObject))
-      a[Upstream5xxResponse] should be thrownBy await(connector.startDelegation(oid500, delegationContextObject))
+    }
+
+    "send the delegation data to the DelegationService, and bubble up any exceptions thrown by http-verbs" in new TestCase {
+      when(mockHttp.PUT[DelegationContext, HttpResponse](any(), any())
+        (any(), any(), any(), any()))
+        .thenThrow(new RuntimeException("Boom"))
+
+      a[RuntimeException] should be thrownBy await(connector.startDelegation("url", delegationContextObject))
     }
   }
 
   "The endDelegation method" should {
 
     "request deletion from the Delegation Service and succeed if the result is 204" in new TestCase {
-
-      stubFor(delete(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(204)))
-
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid"))(any(), any(), any())).thenReturn(Future(HttpResponse(204)))
       await(connector.endDelegation(oid))
-
-      verify(deleteRequestedFor(urlEqualTo(s"/oid/$oid")))
     }
 
     "request deletion from the Delegation Service and succeed if the result is 404" in new TestCase {
-
-      stubFor(delete(urlEqualTo(s"/oid/$oid")).willReturn(aResponse().withStatus(404)))
-
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid"))(any(), any(), any())).thenReturn(Future(HttpResponse(404)))
       await(connector.endDelegation(oid))
-
-      verify(deleteRequestedFor(urlEqualTo(s"/oid/$oid")))
     }
 
     "request deletion from the Delegation Service and fail if the result anything other than 204 or 404" in new TestCase {
-
       val oid200 = "200oid"
       val oid201 = "201oid"
       val oid400 = "400oid"
       val oid500 = "500oid"
 
-      stubFor(delete(urlEqualTo(s"/oid/$oid200")).willReturn(aResponse().withStatus(200)))
-      stubFor(delete(urlEqualTo(s"/oid/$oid201")).willReturn(aResponse().withStatus(201)))
-      stubFor(delete(urlEqualTo(s"/oid/$oid400")).willReturn(aResponse().withStatus(400)))
-      stubFor(delete(urlEqualTo(s"/oid/$oid500")).willReturn(aResponse().withStatus(500)))
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid200"))(any(), any(), any()))
+        .thenReturn(Future(HttpResponse(200)))
+
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid201"))(any(), any(), any()))
+        .thenReturn(Future(HttpResponse(201)))
+
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid400"))(any(), any(), any()))
+        .thenReturn(Future(HttpResponse(400)))
+
+      when(mockHttp.DELETE[HttpResponse](meq(s"$baseUrl/oid/$oid500"))(any(), any(), any()))
+        .thenReturn(Future(HttpResponse(500)))
 
       a[DelegationServiceException] should be thrownBy await(connector.endDelegation(oid200))
       a[DelegationServiceException] should be thrownBy await(connector.endDelegation(oid201))
@@ -198,22 +187,18 @@ class DelegationConnectorSpec extends UnitSpec with WithFakeApplication with Wir
     }
   }
 
+  trait TestHttp extends CoreGet with CorePut with CoreDelete
   trait TestCase extends MockitoSugar {
 
-    val baseUrl = s"http://localhost:$Port"
+    val baseUrl = s"http://localhost"
+
+    val mockHttp = mock[TestHttp]
 
     val connector = new DelegationConnector {
-
       override protected val serviceUrl = baseUrl
-
-      override protected lazy val http = new WSHttp {
-        override val hooks: Seq[HttpHook] = NoneRequired
-      }
+      override protected lazy val http = mockHttp
     }
 
     val oid = "1234"
   }
-
-
-
 }

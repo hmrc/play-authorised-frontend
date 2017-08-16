@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package uk.gov.hmrc.play.frontend.auth.connectors
 
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.frontend.auth.{TaxIdentifiers, DelegationContext, DelegationData, Link}
-import uk.gov.hmrc.play.http._
+import uk.gov.hmrc.http._
+import uk.gov.hmrc.play.frontend.auth.{DelegationContext, DelegationData, Link, TaxIdentifiers}
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent.Future
@@ -28,7 +28,7 @@ trait DelegationConnector {
 
   protected def serviceUrl: String
 
-  protected def http: HttpGet with HttpPut with HttpDelete
+  protected def http: CoreGet with CorePut with CoreDelete
 
   private implicit val linkFormat = Json.format[Link]
   private implicit val delegationDataFormat = Json.format[DelegationData]
@@ -37,27 +37,26 @@ trait DelegationConnector {
 
   private def delegationUrl(oid: String): String = s"$serviceUrl/oid/$oid"
 
-  def getDelegationData(oid: String)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] = {
-
-    implicit val responseHandler = new HttpReads[Option[DelegationData]] {
-      override def read(method: String, url: String, response: HttpResponse): Option[DelegationData] = {
-        response.status match {
-          case 200 => Try(response.json.as[DelegationData]) match {
-            case Success(data) => Some(data)
-            case Failure(e) => throw DelegationServiceException("Unable to parse response", method, url, e)
-          }
-          case 404 => None
-          case unexpectedStatus => throw DelegationServiceException(s"Unexpected response code '$unexpectedStatus'", method, url)
+  val responseHandler = new HttpReads[Option[DelegationData]] {
+    override def read(method: String, url: String, response: HttpResponse): Option[DelegationData] = {
+      response.status match {
+        case 200 => Try(response.json.as[DelegationData]) match {
+          case Success(data) => Some(data)
+          case Failure(e) => throw DelegationServiceException("Unable to parse response", method, url, e)
         }
+        case 404 => None
+        case unexpectedStatus => throw DelegationServiceException(s"Unexpected response code '$unexpectedStatus'", method, url)
       }
     }
+  }
 
+  def getDelegationData(oid: String, responseHandler: HttpReads[Option[DelegationData]] = responseHandler)(implicit hc: HeaderCarrier): Future[Option[DelegationData]] = {
     http.GET[Option[DelegationData]](delegationUrl(oid))
   }
 
   def startDelegation(oid: String, delegationContext: DelegationContext)(implicit hc: HeaderCarrier): Future[Unit] = {
 
-    http.PUT[DelegationContext, HttpResponse](delegationUrl(oid), delegationContext).map { (response: HttpResponse) =>
+      http.PUT[DelegationContext, HttpResponse](delegationUrl(oid), delegationContext).map { (response: HttpResponse) =>
       response.status match {
         case 201 => ()
         case unexpectedStatus => throw DelegationServiceException(s"Unexpected response code '$unexpectedStatus'", "PUT", delegationUrl(oid))
@@ -69,7 +68,7 @@ trait DelegationConnector {
 
     case class DeletionResponse(override val status: Int, cause: Option[Throwable] = None) extends HttpResponse
 
-    val deletionResponse = http.DELETE(delegationUrl(oid)).map(r => DeletionResponse(r.status)).recover {
+    val deletionResponse = http.DELETE[HttpResponse](delegationUrl(oid)).map(r => DeletionResponse(r.status)).recover {
       case e: HttpException => DeletionResponse(e.responseCode, Some(e))
       case e: Upstream4xxResponse => DeletionResponse(e.upstreamResponseCode, Some(e))
       case e: Upstream5xxResponse => DeletionResponse(e.upstreamResponseCode, Some(e))

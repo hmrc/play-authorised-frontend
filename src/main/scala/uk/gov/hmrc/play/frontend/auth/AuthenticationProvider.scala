@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,15 @@
 package uk.gov.hmrc.play.frontend.auth
 
 import org.joda.time.{DateTime, DateTimeZone, Duration}
-import play.api.{Logger, Play}
 import play.api.Play.current
 import play.api.mvc.Results._
 import play.api.mvc._
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext.fromLoggingDetails
-import uk.gov.hmrc.play.http.{HeaderCarrier, SessionKeys}
+import play.api.{Logger, Play}
+import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.play.HeaderCarrierConverter
+import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent._
-
 
 case class UserCredentials(userId: Option[String], token: Option[String])
 
@@ -52,7 +52,7 @@ trait AuthenticationProvider {
 
   def handleAuthenticated(implicit request: Request[_]): PartialFunction[UserCredentials, Future[Either[AuthContext, Result]]] = PartialFunction.empty
 
-  implicit def hc(implicit request: Request[_]) = HeaderCarrier.fromHeadersAndSession(request.headers,Some(request.session) )
+  implicit def hc(implicit request: Request[_]) = HeaderCarrierConverter.fromHeadersAndSession(request.headers,Some(request.session) )
 
   final def userNeedsNewSession(session: Session, now: () => DateTime): Boolean = {
     extractTimestamp(session).fold(false)(hasExpired(now))

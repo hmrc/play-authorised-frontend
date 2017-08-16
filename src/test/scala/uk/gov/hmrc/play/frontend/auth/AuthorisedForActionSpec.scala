@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.domain.SaUtr
 import uk.gov.hmrc.play.frontend.auth.connectors.AuthConnector
 import uk.gov.hmrc.play.frontend.auth.connectors.domain._
-import uk.gov.hmrc.play.http.SessionKeys
+import uk.gov.hmrc.http.SessionKeys
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.time.DateTimeUtils.now
@@ -57,7 +57,7 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
     }
 
     "contain the result of the controller action in the response" in  {
-      when(mockAuthConnector.currentAuthority(Matchers.any())).thenReturn(Some(saAuthority("jdensmore", "AB123456C")))
+      when(mockAuthConnector.currentAuthority(Matchers.any(), Matchers.any())).thenReturn(Some(saAuthority("jdensmore", "AB123456C")))
       val result = testedActions.testAuthorisation(requestFromLoggedInUser)
 
       status(result) should be (200)
@@ -65,7 +65,7 @@ class AuthorisedForActionSpec extends UnitSpec with BeforeAndAfterEachTestData w
     }
 
     "redirect user to uplift if the user has insufficient confidence" in  {
-      when(mockAuthConnector.currentAuthority(Matchers.any())).thenReturn(Some(lowAssuranceUser))
+      when(mockAuthConnector.currentAuthority(Matchers.any(), Matchers.any())).thenReturn(Some(lowAssuranceUser))
       val result = testedActions.testAuthorisation(requestFromLoggedInUser)
 
       status(result) should be (303)

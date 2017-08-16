@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package uk.gov.hmrc.play.frontend.auth
 
 import play.api.mvc.Session
-import uk.gov.hmrc.play.http.SessionKeys
+import uk.gov.hmrc.http.SessionKeys
 
 case class UserSessionData(userId: Option[String], governmentGatewayToken: Option[String], name: Option[String], delegationState: DelegationState) {
   val userCredentials = UserCredentials(userId, governmentGatewayToken)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package uk.gov.hmrc.play.frontend.auth
 
 import play.api.Logger
 import play.api.mvc._
-import uk.gov.hmrc.play.http.HeaderCarrier
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 
 import scala.concurrent._
@@ -32,7 +33,7 @@ trait UserActionWrapper extends Results {
                                            (userAction: AuthContext => Action[AnyContent]): Action[AnyContent] =
     Action.async {
       implicit request =>
-        implicit val hc = HeaderCarrier.fromHeadersAndSession(request.headers,Some(request.session) )
+        implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers,Some(request.session) )
         Logger.info(s"WithUserAuthorisedBy using auth provider ${authenticationProvider.id}")
         val handle =
           authenticationProvider.handleNotAuthenticated orElse
@@ -49,7 +50,7 @@ trait UserActionWrapper extends Results {
                                  (implicit request: Request[AnyContent]):
   PartialFunction[UserCredentials, Future[Either[AuthContext, Result]]] = {
     case UserCredentials(Some(userId), tokenOption) =>
-      implicit val hc = HeaderCarrier.fromHeadersAndSession(request.headers,Some(request.session) )
+      implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers,Some(request.session) )
 
       currentAuthContext(UserSessionData(request.session)).flatMap {
 
