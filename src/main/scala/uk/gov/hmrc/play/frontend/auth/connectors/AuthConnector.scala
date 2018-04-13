@@ -48,7 +48,7 @@ trait AuthConnector {
    *  You should only bind to the subset of available user details you are actually using in your
    *  service to avoid tight coupling to auth JSON formats. 
    *  
-   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/user-details#get-user-detailsidid
+   *  The JSON format is documented at https://github.com/HMRC/user-details#get-user-detailsidid
    */
   def getUserDetails[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.userDetailsUri)
@@ -61,7 +61,7 @@ trait AuthConnector {
    *  You should only bind to the subset of enrolment data you are actually using in your
    *  service to avoid tight coupling to auth JSON formats. 
    *  
-   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#enrolments-get
+   *  The JSON format is documented at https://github.com/HMRC/auth#enrolments-get
    */
   def getEnrolments[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.enrolmentsUri)
@@ -75,7 +75,7 @@ trait AuthConnector {
    *  You should only bind to the one id you are actually using in your
    *  service to avoid tight coupling to auth JSON formats. 
    *  
-   *  The JSON format is documented at https://github.tools.tax.service.gov.uk/HMRC/auth#ids-get
+   *  The JSON format is documented at https://github.com/HMRC/auth#ids-get
    */
   def getIds[T](authContext: AuthContext)(implicit hc: HeaderCarrier, reads: HttpReads[T], ec:ExecutionContext): Future[T] =
     get[T](authContext.idsUri)
