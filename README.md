@@ -1,4 +1,4 @@
-#play-authorised-frontend
+# play-authorised-frontend
 
 [![Build Status](https://travis-ci.org/hmrc/play-authorised-frontend.svg)](https://travis-ci.org/hmrc/play-authorised-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/play-authorised-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/play-authorised-frontend/_latestVersion) [![Apache-2.0 license](http://img.shields.io/badge/license-Apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
@@ -14,14 +14,14 @@ resolvers += Resolver.bintrayRepo("hmrc", "releases")
 libraryDependencies += "uk.gov.hmrc" %% "play-authorised-frontend" % "[INSERT-VERSION]"
 ```
 
-###Actions
+### Actions
 
 It provides two traits from which user-aware controllers can be extended:
 
 * Actions - This provides methods: `AuthorisedFor` and `AuthenticatedBy` which allow different levels of authorisation, and provides the AuthContext object to your controller.
 * DelegationAwareActions - This is used identically to Actions, but works in situations where the code allows _delegated_ access.  These actions require an `AuthConnector` plus a `DelegationConnector` with associated configuration.
 
-###Connectors
+### Connectors
 
 The following connectors should be provided:
 
@@ -30,7 +30,7 @@ The following connectors should be provided:
 
 It is vital to provide companion objects and all necessary configuration for the `AuthConnector` and `DelegationConnector`.
 
-###User and AuthContext
+### User and AuthContext
 
 The `AuthContext` class is the replacement of the `User` class. The `User` is a familiar remnant of previous incarnations of play-frontend and play-authorised-frontend.
 
@@ -67,7 +67,7 @@ To help migrating, the mapping from `User` to `AuthContext` fields are as follow
 `User.actingAsAttorneyFor` - this is deprecated and has been removed in favour of the principal/attorney fields.
 
 
-###Service Origin for Metrics for Securing Our Services
+### Service Origin for Metrics for Securing Our Services
 
 The `GovernmentGateway` trait allows to set a `origin` property which will be used by analytics tools to
 track the entire login journey.
@@ -79,7 +79,7 @@ If you need to dynamically set the value per request, you need to override the `
 the `GovernmentGateway` trait. 
 
 
-###Controller
+### Controller
 
 If you have a service that initiates the delegation flow, where a logged in user starts acting on behalf of another user, then you need to provide a controller extending `uk.gov.hmrc.play.frontend.auth.Delegator`.
 
