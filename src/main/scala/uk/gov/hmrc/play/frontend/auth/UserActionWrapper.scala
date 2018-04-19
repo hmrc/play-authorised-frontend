@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ trait UserActionWrapper extends Results {
     Action.async {
       implicit request =>
         implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers,Some(request.session) )
-        Logger.info(s"WithUserAuthorisedBy using auth provider ${authenticationProvider.id}")
+        Logger.info(s"WithUserAuthenticatedBy using auth provider ${authenticationProvider.id}")
         val handle =
           authenticationProvider.handleNotAuthenticated orElse
             authenticationProvider.handleAuthenticated orElse
