@@ -34,7 +34,7 @@ trait UserActionWrapper extends Results {
     Action.async {
       implicit request =>
         implicit val hc = HeaderCarrierConverter.fromHeadersAndSession(request.headers,Some(request.session) )
-        Logger.info(s"WithUserAuthorisedBy using auth provider ${authenticationProvider.id}")
+        Logger.info(s"WithUserAuthenticatedBy using auth provider ${authenticationProvider.id}")
         val handle =
           authenticationProvider.handleNotAuthenticated orElse
             authenticationProvider.handleAuthenticated orElse
