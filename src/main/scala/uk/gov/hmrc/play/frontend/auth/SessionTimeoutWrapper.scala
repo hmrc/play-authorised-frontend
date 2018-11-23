@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.play.frontend.auth
 
-import org.joda.time.{DateTime, DateTimeZone, Duration}
+import org.joda.time.DateTime
 import play.api.Logger
-import uk.gov.hmrc.http.{HeaderCarrier, SessionKeys}
+import play.api.mvc._
+import uk.gov.hmrc.http.SessionKeys
+import uk.gov.hmrc.play.HeaderCarrierConverter
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import uk.gov.hmrc.time.DateTimeUtils
-import play.api.mvc._
-import uk.gov.hmrc.play.HeaderCarrierConverter
-
 import scala.concurrent._
 
 trait SessionTimeoutWrapper {
