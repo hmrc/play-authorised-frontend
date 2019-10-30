@@ -3,7 +3,7 @@ import sbt._
 import uk.gov.hmrc.{SbtArtifactory, SbtAutoBuildPlugin}
 import uk.gov.hmrc.versioning.SbtGitVersioning
 import uk.gov.hmrc.versioning.SbtGitVersioning.autoImport.majorVersion
-
+import uk.gov.hmrc.SbtArtifactory.autoImport.makePublicallyAvailableOnBintray
 
 object HmrcBuild extends Build {
 
@@ -17,6 +17,7 @@ object HmrcBuild extends Build {
       crossScalaVersions := Seq("2.11.7"),
       libraryDependencies ++= AppDependencies()
     )
+    .settings(makePublicallyAvailableOnBintray := true)
     .settings(majorVersion := 7)
     .settings(resolvers += Resolver.bintrayRepo("hmrc", "releases"),
       resolvers += "hmrc-releases" at "https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases/"
