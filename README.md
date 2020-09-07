@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/hmrc/play-authorised-frontend.svg)](https://travis-ci.org/hmrc/play-authorised-frontend) [ ![Download](https://api.bintray.com/packages/hmrc/releases/play-authorised-frontend/images/download.svg) ](https://bintray.com/hmrc/releases/play-authorised-frontend/_latestVersion) [![Apache-2.0 license](http://img.shields.io/badge/license-Apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-This library is now deprecated. Please use [auth-client](https://github.com/hmrc/auth-client) instead. 
+## This library is now deprecated. Please use [auth-client](https://github.com/hmrc/auth-client) instead.
 
 This component can be used in Frontends to allow Authorised Delegation of users.
 
