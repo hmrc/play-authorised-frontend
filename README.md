@@ -93,6 +93,6 @@ This should hit an endpoint which calls `endDelegation()` on the `Delegator`.  T
 microservice, and removes the delegation flag from the session.
 
 
-## License ##
+## License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
